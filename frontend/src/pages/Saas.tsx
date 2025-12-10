@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { DollarSign, ExternalLink, TrendingUp, Building2, Plus, Play, X, Loader2, Upload, Youtube, CheckCircle, XCircle, SkipForward, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Globe, User, Search } from 'lucide-react'
+import { DollarSign, ExternalLink, TrendingUp, Building2, Plus, Play, X, Loader2, Upload, Youtube, CheckCircle, XCircle, SkipForward, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Globe, User, Search, Calendar } from 'lucide-react'
 import { cn } from '../lib/utils'
 import { useTheme } from '../contexts/ThemeContext'
 
@@ -18,6 +18,8 @@ interface SaasApp {
   niche: string | null
   website_url: string | null
   founder_name: string | null
+  youtube_published_at: string | null
+  created_at: string | null
 }
 
 interface ImportResult {
@@ -35,7 +37,7 @@ interface ChannelImportResults {
   failed: ImportResult[]
 }
 
-type SortField = 'mrr' | 'name' | 'category' | 'niche' | 'founder_name'
+type SortField = 'mrr' | 'name' | 'category' | 'niche' | 'founder_name' | 'published_at'
 type SortDirection = 'asc' | 'desc'
 
 export function Saas() {
@@ -111,6 +113,11 @@ export function Saas() {
         break
       case 'founder_name':
         comparison = (a.founder_name || '').localeCompare(b.founder_name || '')
+        break
+      case 'published_at':
+        const dateA = a.youtube_published_at || a.created_at || ''
+        const dateB = b.youtube_published_at || b.created_at || ''
+        comparison = dateA.localeCompare(dateB)
         break
     }
 
@@ -234,6 +241,16 @@ export function Saas() {
     if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
     if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
     return `$${value}`
+  }
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return null
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
   }
 
   const getYoutubeThumbnail = (videoId: string) => {
@@ -879,6 +896,18 @@ export function Saas() {
                       <SortIcon field="founder_name" />
                     </button>
                   </th>
+                  <th className="px-4 py-3 text-left hidden xl:table-cell">
+                    <button
+                      onClick={() => handleSort('published_at')}
+                      className={cn(
+                        "flex items-center gap-1 text-xs font-semibold uppercase tracking-wider transition-colors",
+                        theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'
+                      )}
+                    >
+                      Published
+                      <SortIcon field="published_at" />
+                    </button>
+                  </th>
                   <th className="px-4 py-3 text-center">
                     <span className={cn(
                       "text-xs font-semibold uppercase tracking-wider",
@@ -1018,6 +1047,26 @@ export function Saas() {
                           )} />
                           <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>
                             {app.founder_name}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className={theme === 'dark' ? 'text-gray-600' : 'text-gray-300'}>-</span>
+                      )}
+                    </td>
+
+                    {/* Published Date Column */}
+                    <td className="px-4 py-4 hidden xl:table-cell">
+                      {(app.youtube_published_at || app.created_at) ? (
+                        <div className="flex items-center gap-2">
+                          <Calendar className={cn(
+                            "h-4 w-4",
+                            theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+                          )} />
+                          <span className={cn(
+                            "text-sm",
+                            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                          )}>
+                            {formatDate(app.youtube_published_at || app.created_at)}
                           </span>
                         </div>
                       ) : (

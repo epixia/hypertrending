@@ -4,7 +4,7 @@ import { Search, TrendingUp, TrendingDown, Minus, MapPin, ExternalLink, RefreshC
 import { cn } from '../lib/utils'
 import { useTheme } from '../contexts/ThemeContext'
 
-const API_BASE = 'http://localhost:5000'
+const API_BASE = 'http://localhost:8892'
 
 const regions = [
   { code: '', name: 'Worldwide' },
