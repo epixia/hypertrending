@@ -1,0 +1,1 @@
+# HyperTrending Ingestion Service
