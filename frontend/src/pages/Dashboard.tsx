@@ -177,13 +177,14 @@ export function Dashboard() {
           .order('last_seen_at', { ascending: false })
 
         if (keywordsError) throw keywordsError
-        setKeywordCount(keywordsData?.length || 0)
+        const keywordsList = keywordsData as { id: string; keyword: string; normalized_keyword: string }[] | null
+        setKeywordCount(keywordsList?.length || 0)
 
         // Fetch timeseries for each keyword and calculate trends
         const trendingData: TrendingKeyword[] = []
         let totalDataPoints = 0
 
-        for (const kw of keywordsData || []) {
+        for (const kw of keywordsList || []) {
           const { data: tsData } = await supabase
             .from('keyword_timeseries')
             .select('ts, interest_value')
