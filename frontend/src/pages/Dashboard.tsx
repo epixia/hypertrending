@@ -192,7 +192,7 @@ export function Dashboard() {
 
           if (tsData && tsData.length > 0) {
             totalDataPoints += tsData.length
-            const values = tsData.map(d => d.interest_value)
+            const values = tsData.map((d: { interest_value: number }) => d.interest_value)
             const current = values[values.length - 1]
             const baseline = values.slice(0, Math.floor(values.length / 2))
               .reduce((a, b) => a + b, 0) / Math.max(1, Math.floor(values.length / 2))

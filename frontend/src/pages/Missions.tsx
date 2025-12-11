@@ -3,7 +3,7 @@ import { Plus, Play, Pause, Settings, Trash2, Clock, CheckCircle, XCircle, Alert
 import { cn } from '../lib/utils'
 import { supabase } from '../lib/supabase'
 import { CreateMissionModal } from '../components/CreateMissionModal'
-import type { MissionStatus, RunStatus } from '../types/database'
+import type { MissionStatus, RunStatus, Mission as MissionType } from '../types/database'
 import { useTheme } from '../contexts/ThemeContext'
 
 interface Mission {
@@ -72,11 +72,11 @@ export function Missions() {
   }, [fetchMissions])
 
   const toggleMissionStatus = async (mission: Mission) => {
-    const newStatus = mission.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+    const newStatus: MissionStatus = mission.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
     try {
       const { error } = await supabase
         .from('missions')
-        .update({ status: newStatus })
+        .update({ status: newStatus } as any)
         .eq('id', mission.id)
 
       if (error) throw error

@@ -15,7 +15,6 @@ export function Sparkline({
   width = 200,
   height = 48,
   strokeColor = '#10b981',
-  fillColor = 'rgba(16, 185, 129, 0.1)',
 }: SparklineProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 })

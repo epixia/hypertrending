@@ -49,19 +49,19 @@ export function Trending() {
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch all trends on mount
-  useEffect(() => {
-    fetchAllTrends()
-  }, [])
+  const convertSparklineToPoints = (sparkline: number[]): InterestPoint[] => {
+    const now = new Date()
+    return sparkline.map((value, index) => {
+      const date = new Date(now)
+      date.setHours(date.getHours() - (sparkline.length - 1 - index) * 4) // Assuming ~4 hour intervals for 7 days
+      return {
+        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        value
+      }
+    })
+  }
 
-  // Auto-search if query param is provided
-  useEffect(() => {
-    if (initialQuery) {
-      handleSearch(initialQuery)
-    }
-  }, [initialQuery])
-
-  const fetchAllTrends = async () => {
+  const fetchAllTrends = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
@@ -69,7 +69,7 @@ export function Trending() {
       if (!response.ok) throw new Error('Failed to fetch trends')
       const data = await response.json()
       setTrends(data.trends || [])
-      if (data.trends?.length > 0 && !selectedTrend) {
+      if (data.trends?.length > 0) {
         setSelectedTrend(data.trends[0])
         setInterestOverTime(convertSparklineToPoints(data.trends[0].sparkline))
       }
@@ -78,7 +78,7 @@ export function Trending() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   const handleSearch = useCallback(async (query: string) => {
     if (!query.trim()) return
@@ -131,22 +131,71 @@ export function Trending() {
     }
   }, [selectedRegion])
 
+  // Fetch all trends on mount
+  useEffect(() => {
+    fetchAllTrends()
+  }, [fetchAllTrends])
+
+  // Auto-search if query param is provided (only on mount)
+  useEffect(() => {
+    if (initialQuery) {
+      // Directly fetch the trend for the initial query
+      const fetchInitialTrend = async () => {
+        setIsSearching(true)
+        setError(null)
+        try {
+          const response = await fetch(`${API_BASE}/api/refresh-trend`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              keyword: initialQuery.trim(),
+              region: ''
+            })
+          })
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.detail || 'Failed to fetch trend data')
+          }
+
+          const data = await response.json()
+
+          const newTrend: TrendData = {
+            keyword: data.keyword,
+            keyword_id: data.keyword_id,
+            current_interest: data.current_interest,
+            trend_score: data.trend_score,
+            sparkline: data.sparkline,
+            last_updated: data.last_updated,
+            data_points: data.data_points
+          }
+
+          setTrends(prev => {
+            const exists = prev.find(t => t.keyword_id === newTrend.keyword_id)
+            if (exists) {
+              return prev.map(t => t.keyword_id === newTrend.keyword_id ? newTrend : t)
+            }
+            return [newTrend, ...prev]
+          })
+
+          setSelectedTrend(newTrend)
+          setInterestOverTime(convertSparklineToPoints(newTrend.sparkline))
+
+        } catch (err: any) {
+          setError(err.message)
+        } finally {
+          setIsSearching(false)
+        }
+      }
+      fetchInitialTrend()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch(searchQuery)
     }
-  }
-
-  const convertSparklineToPoints = (sparkline: number[]): InterestPoint[] => {
-    const now = new Date()
-    return sparkline.map((value, index) => {
-      const date = new Date(now)
-      date.setHours(date.getHours() - (sparkline.length - 1 - index) * 4) // Assuming ~4 hour intervals for 7 days
-      return {
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        value
-      }
-    })
   }
 
   const sortedTrends = [...trends].sort((a, b) => {

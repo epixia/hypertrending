@@ -80,19 +80,19 @@ export function CreateMissionModal({ isOpen, onClose, onSuccess }: CreateMission
 
     try {
       // Create the mission
-      const { data: mission, error: missionError } = await supabase
+      const { error: missionError } = await supabase
         .from('missions')
         .insert({
           workspace_id: DEFAULT_WORKSPACE_ID,
           name: name.trim(),
           description: description.trim() || null,
-          status: 'ACTIVE',
+          status: 'ACTIVE' as const,
           config: {
             keywords: validKeywords,
             regions: selectedRegions,
             sources: ['GOOGLE_TRENDS'],
           },
-        })
+        } as any)
         .select()
         .single()
 
@@ -104,7 +104,7 @@ export function CreateMissionModal({ isOpen, onClose, onSuccess }: CreateMission
           .from('keywords')
           .upsert({
             keyword: keyword.trim(),
-          }, {
+          } as any, {
             onConflict: 'normalized_keyword',
           })
 
