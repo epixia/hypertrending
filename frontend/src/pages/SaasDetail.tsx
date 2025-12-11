@@ -4,7 +4,7 @@ import { ArrowLeft, DollarSign, Globe, User, Tag, Play, FileText, Sparkles, Load
 import { cn } from '../lib/utils'
 import { useTheme } from '../contexts/ThemeContext'
 
-const API_URL = 'http://localhost:8892'
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 interface SaasApp {
   id: string

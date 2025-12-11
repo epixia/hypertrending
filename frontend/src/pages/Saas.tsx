@@ -4,7 +4,7 @@ import { DollarSign, ExternalLink, TrendingUp, Building2, Plus, Play, X, Loader2
 import { cn } from '../lib/utils'
 import { useTheme } from '../contexts/ThemeContext'
 
-const API_URL = 'http://localhost:8892'
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 interface SaasApp {
   id: string
