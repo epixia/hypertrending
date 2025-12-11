@@ -74,9 +74,8 @@ export function Missions() {
   const toggleMissionStatus = async (mission: Mission) => {
     const newStatus: MissionStatus = mission.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
     try {
-      // @ts-expect-error - Supabase type inference issue
-      const { error } = await supabase
-        .from('missions')
+      const { error } = await (supabase
+        .from('missions') as any)
         .update({ status: newStatus })
         .eq('id', mission.id)
 
